@@ -2,7 +2,9 @@
     import { object, string, type InferType } from 'yup'
     import type { FormSubmitEvent } from '#ui/types'
     import { UPopover } from '#components'
-
+    definePageMeta({
+      middleware: ['auth']
+    })
     const schema = object({
     email: string().email('Invalid email').required('Required'),
     password: string()
