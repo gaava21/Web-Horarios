@@ -9,7 +9,7 @@ export default defineEventHandler(async (event: H3Event) => {
 
   if (error) {
     console.error('Error obteniendo usuarios:', error)
-    throw error
+    throw createError({ statusCode: 500, statusMessage: 'Error al obtener usuarios' })
   }
 
   return data

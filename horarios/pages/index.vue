@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { object, string, type InferType } from 'yup'
 import type { FormSubmitEvent } from '#ui/types'
-import supabase from '~/supabase'
-import { navigateTo } from '#app'
-definePageMeta({
-})
+import { useAuth } from '~/composables/auth'
+import { ref, reactive, onMounted } from 'vue'
+
+const { signIn } = useAuth()
+const loading = ref(false)
+
 const schema = object({
-  email: string().email('Invalid email').required('Required'),
-  password: string().min(8, 'Must be at least 8 characters').required('Required')
+  email: string().email('Email inválido').required('Requerido'),
+  password: string().min(8, 'Mínimo 8 caracteres').required('Requerido')
 })
 
 type Schema = InferType<typeof schema>
@@ -17,27 +19,24 @@ const state = reactive({
   password: ''
 })
 
+// Verificar si el componente se monta
+onMounted(() => {
+  console.log('Componente index.vue montado')  // ✅
+})
+
 async function onSubmit(event: FormSubmitEvent<Schema>) {
+  console.log('Evento onSubmit disparado')  // ✅ Verificar si se dispara
   console.log('Datos del formulario:', event.data)
   const { email, password } = event.data
+  loading.value = true
 
   try {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-
-    if (error) {
-      console.error('Error durante el inicio de sesión:', error)
-      alert('Error durante el inicio de sesión: ' + error.message)
-      return
-    }
-
-    console.log('Inicio de sesión exitoso:', data)
-    navigateTo('/lobby')
+    await signIn(email, password)
   } catch (err) {
-    console.error('Ocurrió un error inesperado:', err)
-    alert('Ocurrió un error inesperado, intenta de nuevo.')
+    console.error('Error durante el inicio de sesión:', err)
+    alert('Correo o contraseña incorrectos.')
+  } finally {
+    loading.value = false
   }
 }
 </script>
@@ -53,9 +52,14 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
         <UFormGroup label="Password" name="password">
           <UInput v-model="state.password" type="password" />
         </UFormGroup>
-        <UButton block class="w-full" :ui="{ rounded: 'rounded-full' }">
+        <UButton type="submit" pendingText="Iniciando sesión" block class="w-full" :ui="{ rounded: 'rounded-full' }">
           Iniciar
         </UButton>
+        <NuxtLink to="/registro">
+          <UButton block class="w-full mt-2" :ui="{ rounded: 'rounded-full' }">
+            Registro
+          </UButton>
+        </NuxtLink>
       </UForm>
     </div>
   </div>

@@ -2,15 +2,16 @@
     import { object, string, type InferType } from 'yup'
     import type { FormSubmitEvent } from '#ui/types'
     import { UPopover } from '#components'
-    definePageMeta({
-      middleware: ['auth']
-    })
+    import { useAuth } from '~/composables/auth'
+
     const schema = object({
     email: string().email('Invalid email').required('Required'),
     password: string()
       .min(8, 'Must be at least 8 characters')
       .required('Required')
   })
+  
+  const { user, userName, signOut } = useAuth()
 
   type Schema = InferType<typeof schema>
 
@@ -45,13 +46,15 @@
       </UButton>
       <template #panel>
         <div class="bg-white shadow-lg rounded-lg p-2 w-48 text-center">
+          <h1 class="text-xl font-semibold mb-4">Bienvenido {{ userName || 'Usuario' }} </h1>
+          <p v-if="user">Usuario: {{ userName || 'Usuario' }}</p>
           <UButton color="white" class=" text-black">
             <img src="C:\Users\gerar\OneDrive - Universidad Técnica Nacional\Escritorio\Web-Horarios\horarios\images\perfil.png" 
                 alt="Botón" class="w-6 h-6 inline-block mr-2" />
             Perfil
           </UButton>
           <UButton class="mb-2 mt-2" color="gray" block>Configuración</UButton>
-          <UButton color="gray" block>Cerrar sesión</UButton>
+          <UButton @click="signOut" class="mt-4">Cerrar sesión</UButton>
         </div>
       </template>
     </UPopover>

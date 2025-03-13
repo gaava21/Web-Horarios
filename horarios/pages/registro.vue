@@ -27,6 +27,11 @@ async function usuarios() {
 <template>
   <div class="flex items-center justify-center min-h-screen bg-gray-100">
     <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
+      <NuxtLink to="/">
+        <UButton block class="w-full mt-2 mr-8 size-9" :ui="{ rounded: 'rounded-full' }">
+          Atras
+        </UButton>
+      </NuxtLink>
       <h1 class="text-xl font-semibold mb-4">Registro</h1>
 
       <UInput v-model="nombre" class="w-full mb-4" placeholder="Nombre" />
