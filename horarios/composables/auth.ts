@@ -2,7 +2,7 @@ import { ref, onMounted } from "vue";
 import supabase from "~/supabase";
 import { useRouter } from "#app";
 import type { AuthUser } from "@supabase/supabase-js";
-
+//
 // ✅ Define el tipo explícito para los usuarios
 type Usuario = {
   id: string;
