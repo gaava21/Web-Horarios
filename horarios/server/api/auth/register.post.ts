@@ -6,40 +6,56 @@ interface AuthParams {
   password: string;
   nombre: string;
   telefono: string;
+  claveRol?: string;
 }
 
 export default defineEventHandler(async (event: H3Event) => {
-  const body = await readBody<AuthParams>(event);
+  const config = useRuntimeConfig()
+  console.log("CLAVE CORRECTA desde runtimeConfig:", config.CLAVE_SECRETA_ADMIN)
 
-  // Paso 1: Registrar al usuario en Auth
+  const CLAVE_SECRETA_ADMIN = config.CLAVE_SECRETA_ADMIN
+  const body = await readBody<AuthParams>(event)
+
+  console.log("CLAVE INGRESADA:", body.claveRol)
+
+  // ⚠️ Si intentan registrarse como admin pero no ponen la clave correcta:
+  if (body.claveRol && body.claveRol !== CLAVE_SECRETA_ADMIN) {
+    throw createError({ statusCode: 403, message: "Clave de administrador incorrecta" });
+  }
+
+  const tipoUsuario = body.claveRol === CLAVE_SECRETA_ADMIN ? 'admin' : 'socio'
+  console.log('Rol definido:', tipoUsuario)
+
+  // Paso 1: Registrar en Supabase Auth
   const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
     email: body.email,
     password: body.password,
   });
 
   if (signUpError) {
+    console.error("Error en signUp:", signUpError.message)
     throw createError({ statusCode: 400, message: signUpError.message });
   }
 
-  // Obtenemos el ID del usuario creado
   const userId = signUpData.user?.id;
   if (!userId) {
     throw createError({ statusCode: 400, message: "No se obtuvo el ID del usuario" });
   }
 
-  // Paso 2: Insertar los datos adicionales en la tabla "usuarios"
-  const { data: insertData, error: insertError } = await supabase
+  // Paso 2: Insertar en tabla usuarios
+  const { error: insertError } = await supabase
     .from("usuarios")
     .insert({
-      id: userId,           // Usamos el mismo ID que el de Auth para relacionar ambas fuentes
-      nombre: body.nombre,  // Nombre personalizado
-      correo: body.email,   // Correo del usuario
-      tipo_usuario: "socio" // O el valor que corresponda según tu lógica
+      id: userId,
+      nombre: body.nombre,
+      correo: body.email,
+      tipo_usuario: tipoUsuario
     });
 
   if (insertError) {
+    console.error("Error en insert:", insertError.message)
     throw createError({ statusCode: 400, message: insertError.message });
   }
 
-  return { signUpData, insertData };
+  return { success: true, tipo_usuario: tipoUsuario };
 });

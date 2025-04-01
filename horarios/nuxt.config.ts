@@ -6,4 +6,9 @@ export default defineNuxtConfig({
   ,colorMode: {
     preference: 'light'
   },
+
+  runtimeConfig: {
+    CLAVE_SECRETA_ADMIN: process.env.NUXT_CLAVE_SECRETA_ADMIN,
+    public: {}
+  },
 })

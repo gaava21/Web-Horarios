@@ -2,10 +2,12 @@ import { H3Event } from 'h3'
 import supabase from '~/supabase'
 
 export default defineEventHandler(async (event: H3Event) => {
-  // Consulta personalizada a la tabla pública de usuarios
+  // Agregar header para evitar el error 406
+  setHeader(event, 'Accept', 'application/json')
+
   const { data, error } = await supabase
-    .from('usuarios')  // Reemplaza 'usuarios' con el nombre real de tu tabla
-    .select('id, correo, nombre')  // Asegúrate de que el campo 'nombre' existe en la tabla pública
+    .from('usuarios')
+    .select('id, correo, nombre')
 
   if (error) {
     console.error('Error obteniendo usuarios:', error)
