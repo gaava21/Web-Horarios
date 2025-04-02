@@ -30,6 +30,11 @@ const enviarEnlaceRecuperacion = async () => {
 
 <template>
   <div class="max-w-md mx-auto mt-12 p-6 bg-white rounded-lg shadow">
+    <NuxtLink to="registro">
+      <UButton block class="w-full mt-2 mr-8 mb-2 size-9" :ui="{ rounded: 'rounded-full' }">
+        Atras
+      </UButton>
+    </NuxtLink>
     <h1 class="text-xl font-bold mb-4 text-center">¿Olvidaste tu contraseña?</h1>
 
     <UInput

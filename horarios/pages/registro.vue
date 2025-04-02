@@ -45,6 +45,12 @@ async function usuarios() {
         <UButton @click="usuarios" block class="w-full" :ui="{ rounded: 'rounded-full' }">
           Registrar
         </UButton>
+
+        <NuxtLink to="olvido">
+          <UButton block class="w-full mt-2" :ui="{ rounded: 'rounded-full' }">
+            Olvidé mi contraseña
+          </UButton>
+        </NuxtLink>
       </div>
     </div>
   </div>

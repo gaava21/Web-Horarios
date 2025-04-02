@@ -65,6 +65,11 @@ const solicitarCambioContrasena = async () => {
 </script>
 <template>
   <div class="p-6 max-w-md mx-auto space-y-4 bg-white shadow-lg rounded-lg mt-8">
+    <NuxtLink to="lobby">
+      <UButton block class="w-full mt-2 mr-8 size-9" :ui="{ rounded: 'rounded-full' }">
+        Atras
+      </UButton>
+    </NuxtLink>
     <h2 class="text-2xl font-bold text-center">Perfil del Usuario</h2>
 
     <p><strong>Nombre actual:</strong> {{ userName }}</p>

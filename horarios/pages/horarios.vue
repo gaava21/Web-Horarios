@@ -84,6 +84,8 @@ const agendar = async (index) => {
     console.error('Error al reservar:', error)
   } else {
     alert('Reserva creada')
+    await obtenerHorarios()
+    await obtenerReservasUsuario()
   }
 }
 
@@ -102,12 +104,14 @@ const desagendar = async (index) => {
     console.error('Error al cancelar reserva:', error)
   } else {
     alert('Reserva cancelada')
+    await obtenerHorarios()
+    await obtenerReservasUsuario()
   }
 }
 </script>
 
 <template>
-    <div class="flex items-center justify-end p-4 bg-gray-100 shadow-md mr-5">
+  <div class="flex items-center justify-end p-4 bg-gray-100 shadow-md mr-5">
     <ULink to="lobby">
       <UButton color="white" class="p-2 mr-2 mt-2 mb-2 text-black rounded-lg ml-right">
         <img
@@ -121,17 +125,18 @@ const desagendar = async (index) => {
         ...
       </UButton>
       <template #panel>
-        <div class="bg-white shadow-lg rounded-lg p-2 w-48 text-center">
-          <UButton color="white" class=" text-black">
-            <img
-              src="\images\perfil.png"
-              alt="Botón" class="w-6 h-6 inline-block mr-2" />
-            Perfil
-          </UButton>
-          <UButton class="mb-2 mt-2" color="gray" block>Configuración</UButton>
-          <UButton color="gray" block>Cerrar sesión</UButton>
-        </div>
-      </template>
+          <div class="bg-white shadow-lg rounded-lg p-2 w-48 text-center">
+            <h1 class="text-xl font-semibold mb-4">Bienvenido {{ userName || 'Usuario' }} </h1>
+            <NuxtLink to="perfil">
+              <UButton color="white" class=" text-black">
+                <img src="/images/perfil.png" 
+                    alt="Botón" class="w-6 h-6 inline-block mr-2" />
+                Perfil Configuración
+              </UButton>
+            </NuxtLink>
+            <UButton @click="signOut" class="mt-4">Cerrar sesión</UButton>
+          </div>
+        </template>
     </UPopover>
   </div>
   <div class="p-6 space-y-4">
