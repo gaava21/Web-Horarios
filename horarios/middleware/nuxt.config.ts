@@ -1,13 +1,11 @@
 export default defineNuxtConfig({
   routeRules: {
-    '/lobby': { appMiddleware: 'auth' }
+    '/lobby': { appMiddleware: ['auth'] },
+    '/perfil': { appMiddleware: ['auth'] },
+    '/horarios': { appMiddleware: ['auth'] }
   },
-
   runtimeConfig: {
-    CLAVE_SECRETA_ADMIN: process.env.CLAVE_SECRETA_ADMIN as string, // ← correcto aquí
-
-    public: {
-      // variables visibles en el cliente (ej: API_URL)
-    }
+    CLAVE_SECRETA_ADMIN: process.env.CLAVE_SECRETA_ADMIN,
+    public: {}
   }
 })

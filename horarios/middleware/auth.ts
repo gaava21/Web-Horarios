@@ -1,9 +1,10 @@
+// middleware/auth.ts
 import { useAuth } from '~/composables/auth'
 
-export default defineNuxtRouteMiddleware(async (to, from) => {
+export default defineNuxtRouteMiddleware(async () => {
   const { user, checkSession } = useAuth()
-  await checkSession()  // Espera a que se verifique la sesión
+  await checkSession()
   if (!user.value) {
-    return navigateTo('/') // Redirecciona al login si no hay sesión
+    return navigateTo('/')
   }
 })

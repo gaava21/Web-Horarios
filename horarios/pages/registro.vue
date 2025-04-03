@@ -19,13 +19,12 @@ async function usuarios() {
         password: contraseña.value,
         email: correo.value,
         telefono: telefono.value,
-        tipo_usuario: tipo_usuario.value
+        claveRol: tipo_usuario.value // ✅ Cambiado aquí
       }
     })
 
     mensaje.value = "Registro exitoso. Revisa tu correo para confirmar tu cuenta."
 
-    // ✅ Esperar 3 segundos y redirigir al login
     setTimeout(() => {
       router.push('/')
     }, 3000)
@@ -35,6 +34,7 @@ async function usuarios() {
     mensaje.value = "Ocurrió un error durante el registro."
   }
 }
+
 </script>
 
 <template>

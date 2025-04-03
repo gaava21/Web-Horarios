@@ -1,38 +1,26 @@
 <script setup lang="ts">
-    import { object, string, type InferType } from 'yup'
-    import type { FormSubmitEvent } from '#ui/types'
-    import { UPopover } from '#components'
-    import { useAuth } from '~/composables/auth'
+import { useAuth } from '~/composables/auth'
 
-    const schema = object({
-    email: string().email('Invalid email').required('Required'),
-    password: string()
-      .min(8, 'Must be at least 8 characters')
-      .required('Required')
-  })
-  
-  const { user, userName, signOut } = useAuth()
-
-  type Schema = InferType<typeof schema>
-
-  const state = reactive({
-    email: undefined,
-    password: undefined
-  })
-
-  async function onSubmit(event: FormSubmitEvent<Schema>) {
-    // Do something with event.data
-    console.log(event.data)
-  }
+const { userName, userRole, signOut } = useAuth()
 </script>
+
+
+
 
 <template>
   <div class="min-h-screen bg-cover bg-center" style="background-image: url(/images/portada.png)">
     <div class="flex items-center justify-end p-4 bg-gray-100 ">
+
+      <!-- 👇 Solo admins ven este botón -->
+      <NuxtLink v-if="userRole === 'admin'" to="/tabla">
+        <UButton color="white" class="p-2 mr-2 mt-2 mb-2 text-black rounded-lg ml-auto">
+          <img src="/images/perfil.png" class="w-6 h-6 inline-block mr-2" />
+          Admin Panel
+        </UButton>
+      </NuxtLink>
       <NuxtLink to="/horarios">
         <UButton color="white" class="p-2 mr-2 mt-2 mb-2 text-black rounded-lg ml-auto">
-          <img src="/images/horarios.png" 
-              alt="Botón" class="w-6 h-6 inline-block mr-2" />
+          <img src="/images/horarios.png" class="w-6 h-6 inline-block mr-2" />
           Horarios
         </UButton>
       </NuxtLink>

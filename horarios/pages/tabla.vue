@@ -1,38 +1,48 @@
 <script setup>
+import { useRouter } from '#app'
 import { ref, onMounted, computed } from 'vue'
+import { useAuth } from '~/composables/auth'
+import supabase from '~/supabase'
 
 const usuarios = ref([])
+const { userRole, roleLoaded, checkSession } = useAuth()
+const router = useRouter()
 
-// 🔄 Obtener usuarios desde la API
+// 🔄 Obtener usuarios directamente desde Supabase
 const obtenerUsuarios = async () => {
   try {
-    const data = await $fetch('/api/auth/obtener_usuarios_auth')
-    usuarios.value = data.filter(u => u && u.id)
+    const { data, error } = await supabase
+      .from('usuarios')
+      .select('id, nombre, correo')
+
+    if (error) throw error
+    usuarios.value = data || []
   } catch (error) {
     console.error('Error obteniendo usuarios:', error)
   }
 }
 
-// 🗑️ Eliminar un usuario
 const eliminarUsuario = async (id) => {
   const confirmacion = confirm('¿Estás seguro de que deseas eliminar este usuario?')
   if (!confirmacion) return
 
   try {
-    await $fetch('/api/auth/eliminar_usuarios', {
-      method: 'POST',
-      body: { id }
-    })
+    await supabase.from('usuarios').delete().eq('id', id)
     alert('Usuario eliminado exitosamente')
-    await obtenerUsuarios() // 🔁 Recargar la lista
+    await obtenerUsuarios()
   } catch (error) {
     console.error('Error al eliminar usuario:', error)
     alert('Hubo un error al eliminar el usuario.')
   }
 }
 
-onMounted(() => {
-  obtenerUsuarios()
+onMounted(async () => {
+  await checkSession()
+  if (roleLoaded.value && userRole.value !== 'admin') {
+    router.push('/lobby')
+  } else {
+    await obtenerUsuarios() // 🔁 Solo si es admin
+  }
 })
 
 const usuariosValidos = computed(() =>
@@ -40,8 +50,14 @@ const usuariosValidos = computed(() =>
 )
 </script>
 
+
 <template>
-  <div class="p-6">
+  <div v-if="userRole === 'admin' && roleLoaded" class="p-6">
+    <NuxtLink to="lobby">
+        <UButton block class="w-full mt-2 mr-8 size-9" :ui="{ rounded: 'rounded-full' }">
+          Atrás
+        </UButton>
+      </NuxtLink>
     <h1 class="text-2xl font-bold mb-4">Lista de Usuarios</h1>
 
     <div class="overflow-x-auto">
@@ -86,5 +102,8 @@ const usuariosValidos = computed(() =>
         </tbody>
       </table>
     </div>
+  </div>
+  <div v-else class="text-center py-8 text-gray-600">
+    Cargando o sin acceso...
   </div>
 </template>
