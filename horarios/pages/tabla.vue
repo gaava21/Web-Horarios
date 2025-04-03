@@ -19,7 +19,7 @@ const eliminarUsuario = async (id) => {
   if (!confirmacion) return
 
   try {
-    await $fetch('/api/auth/eliminar_usuario', {
+    await $fetch('/api/auth/eliminar_usuarios', {
       method: 'POST',
       body: { id }
     })
