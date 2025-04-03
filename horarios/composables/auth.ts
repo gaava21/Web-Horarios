@@ -16,47 +16,27 @@ const userName = ref<string | null>("Usuario"); // ✅ Variable para el nombre d
 export function useAuth() {
   const router = useRouter();
 
-  // ✅ Función para iniciar sesión
   const signIn = async (email: string, password: string) => {
     console.log("Intentando iniciar sesión...");
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-
+  
     if (error) {
-      if (error.message === "Email not confirmed") {
-        // ✅ Reenvía el correo de confirmación
-        const { error: resendError } = await supabase.auth.resend({
-          email,
-          type: "signup", // ✅ Especifica el tipo como 'signup' para confirmar registro
-        });
-        if (resendError) {
-          console.error(
-            "Error al reenviar correo de confirmación:",
-            resendError.message
-          );
-        } else {
-          alert(
-            "Correo de confirmación reenviado. Por favor verifica tu correo."
-          );
-        }
-        return;
-      } else {
-        console.error("Error en el inicio de sesión:", error.message);
-        alert("Error durante el inicio de sesión: " + error.message);
-        throw error;
-      }
+      console.error("Error en el inicio de sesión:", error.message);
+      alert("Error durante el inicio de sesión: " + error.message);
+      throw error;
     }
-
+  
     if (data.user) {
-      // ✅ Caso donde el correo SÍ está confirmado
       console.log("Inicio de sesión exitoso:", data.user);
       user.value = data.user;
-      await fetchUserName(data.user.id); // ✅ Obtener el nombre del usuario
-      router.push("/lobby"); // ✅ Redirigir al lobby
+      await fetchUserName(data.user.id);
+      router.push("/lobby");
     }
   };
+  
 
   // ✅ Función para obtener el nombre del usuario
   const fetchUserName = async (userId: string) => {

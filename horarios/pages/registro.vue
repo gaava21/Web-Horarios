@@ -1,11 +1,14 @@
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from '#app'
 
+const router = useRouter()
 const nombre = ref('')
 const correo = ref('')
 const contraseña = ref('')
-const telefono = ref('') // Agrega esta variable para el teléfono
+const telefono = ref('')
 const tipo_usuario = ref('')
+const mensaje = ref('')
 
 async function usuarios() {
   try {
@@ -16,12 +19,20 @@ async function usuarios() {
         password: contraseña.value,
         email: correo.value,
         telefono: telefono.value,
-        tipo_usuario: tipo_usuario.value  // Se lo mandamos al backend
+        tipo_usuario: tipo_usuario.value
       }
     })
-    console.log(data)
+
+    mensaje.value = "Registro exitoso. Revisa tu correo para confirmar tu cuenta."
+
+    // ✅ Esperar 3 segundos y redirigir al login
+    setTimeout(() => {
+      router.push('/')
+    }, 3000)
+
   } catch (error) {
-    console.error('Error obteniendo usuarios:', error)
+    console.error('Error registrando usuario:', error)
+    mensaje.value = "Ocurrió un error durante el registro."
   }
 }
 </script>
@@ -31,10 +42,12 @@ async function usuarios() {
     <div class="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
       <NuxtLink to="/">
         <UButton block class="w-full mt-2 mr-8 size-9" :ui="{ rounded: 'rounded-full' }">
-          Atras
+          Atrás
         </UButton>
       </NuxtLink>
+
       <h1 class="text-xl font-semibold mb-4">Registro</h1>
+      
       <UInput v-model="tipo_usuario" class="w-full mb-4" placeholder="Clave Segura (opcional)" />
       <UInput v-model="nombre" class="w-full mb-4" placeholder="Nombre" />
       <UInput v-model="correo" class="w-full mb-4" placeholder="Correo" />
@@ -46,7 +59,11 @@ async function usuarios() {
           Registrar
         </UButton>
 
-        <NuxtLink to="olvido">
+        <p class="text-sm text-center mt-4" :class="mensaje.includes('exitoso') ? 'text-green-600' : 'text-red-600'">
+          {{ mensaje }}
+        </p>
+
+        <NuxtLink to="/olvido">
           <UButton block class="w-full mt-2" :ui="{ rounded: 'rounded-full' }">
             Olvidé mi contraseña
           </UButton>

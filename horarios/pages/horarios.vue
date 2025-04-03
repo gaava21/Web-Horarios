@@ -111,55 +111,65 @@ const desagendar = async (index) => {
 </script>
 
 <template>
-  <div class="flex items-center justify-end p-4 bg-gray-100 shadow-md mr-5">
-    <ULink to="lobby">
-      <UButton color="white" class="p-2 mr-2 mt-2 mb-2 text-black rounded-lg ml-right">
-        <img
-          src="\images\home.png"
-          alt="Botón" class="w-6 h-6 inline-block mr-2" />
-        Inicio
-      </UButton>
-    </ULink>
-    <UPopover>
-      <UButton color="white" class="p-2 mr-2 mt-2 mb-2 w-10 text-black text-center rounded-lg">
-        ...
-      </UButton>
-      <template #panel>
-          <div class="bg-white shadow-lg rounded-lg p-2 w-48 text-center">
-            <h1 class="text-xl font-semibold mb-4">Bienvenido {{ userName || 'Usuario' }} </h1>
-            <NuxtLink to="perfil">
-              <UButton color="white" class=" text-black">
-                <img src="/images/perfil.png" 
-                    alt="Botón" class="w-6 h-6 inline-block mr-2" />
-                Perfil Configuración
-              </UButton>
-            </NuxtLink>
-            <UButton @click="signOut" class="mt-4">Cerrar sesión</UButton>
-          </div>
-        </template>
-    </UPopover>
-  </div>
-  <div class="p-6 space-y-4">
-    <div v-for="(horario, index) in horarios" :key="horario.id" class="p-4 border rounded shadow">
-      <p><strong>Día:</strong> {{ horario.dia }}</p>
-      <p><strong>Hora:</strong> {{ horario.hora }}</p>
-      <p><strong>Entrenador:</strong> {{ horario.instructor }}</p>
-      <p><strong>Clase:</strong> {{ horario.public_clases?.nombre }}</p>
+  <div class="min-h-screen bg-cover bg-center" style="background-image: url('/images/portada.png')">
+    
+    <!-- Capa translúcida encima del fondo -->
+    <div class="bg-white bg-opacity-20 min-h-screen">
+      
+      <!-- Barra superior -->
+      <div class="flex items-center justify-end p-4 bg-gray-100 shadow-md mr-5">
+        <ULink to="lobby">
+          <UButton color="white" class="p-2 mr-2 mt-2 mb-2 text-black rounded-lg ml-right">
+            <img src="/images/home.png" alt="Botón" class="w-6 h-6 inline-block mr-2" />
+            Inicio
+          </UButton>
+        </ULink>
+        <UPopover>
+          <UButton color="white" class="p-2 mr-2 mt-2 mb-2 w-10 text-black text-center rounded-lg">...</UButton>
+          <template #panel>
+            <div class="bg-white shadow-lg rounded-lg p-2 w-48 text-center">
+              <h1 class="text-xl font-semibold mb-4">Bienvenido {{ userName || 'Usuario' }}</h1>
+              <NuxtLink to="perfil">
+                <UButton color="white" class="text-black">
+                  <img src="/images/perfil.png" alt="Botón" class="w-6 h-6 inline-block mr-2" />
+                  Perfil Configuración
+                </UButton>
+              </NuxtLink>
+              <UButton @click="signOut" class="mt-4">Cerrar sesión</UButton>
+            </div>
+          </template>
+        </UPopover>
+      </div>
 
-      <UButton
-      class="mt-2 mr-2"
-      :disabled="reservasUsuario.includes(horario.id)"
-      @click="agendar(index)">
-      Agendar
-    </UButton>
+      <!-- Contenido con agenda -->
+      <div class="p-6 space-y-4">
+        <div
+          v-for="(horario, index) in horarios"
+          :key="horario.id"
+          class="p-4 border rounded shadow bg-white bg-opacity-90"
+        >
+          <p><strong>Día:</strong> {{ horario.dia }}</p>
+          <p><strong>Hora:</strong> {{ horario.hora }}</p>
+          <p><strong>Entrenador:</strong> {{ horario.instructor }}</p>
+          <p><strong>Clase:</strong> {{ horario.public_clases?.nombre }}</p>
 
-    <UButton
-      v-if="reservasUsuario.includes(horario.id)"
-      class="mt-2"
-      @click="desagendar(index)">
-      Desagendar
-    </UButton>
+          <UButton
+            class="mt-2 mr-2"
+            :disabled="reservasUsuario.includes(horario.id)"
+            @click="agendar(index)">
+            Agendar
+          </UButton>
+
+          <UButton
+            v-if="reservasUsuario.includes(horario.id)"
+            class="mt-2"
+            @click="desagendar(index)">
+            Desagendar
+          </UButton>
+        </div>
+      </div>
 
     </div>
   </div>
 </template>
+

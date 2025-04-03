@@ -64,42 +64,44 @@ const solicitarCambioContrasena = async () => {
 }
 </script>
 <template>
-  <div class="p-6 max-w-md mx-auto space-y-4 bg-white shadow-lg rounded-lg mt-8">
-    <NuxtLink to="lobby">
-      <UButton block class="w-full mt-2 mr-8 size-9" :ui="{ rounded: 'rounded-full' }">
-        Atras
-      </UButton>
-    </NuxtLink>
-    <h2 class="text-2xl font-bold text-center">Perfil del Usuario</h2>
+  <div class="min-h-screen bg-gray-200 flex items-center justify-center">
+    <div class="p-6 max-w-md mx-auto space-y-4 bg-white shadow-lg rounded-lg mt-8">
+      <NuxtLink to="lobby">
+        <UButton block class="w-full mt-2 mr-8 size-9" :ui="{ rounded: 'rounded-full' }">
+          Atras
+        </UButton>
+      </NuxtLink>
+      <h2 class="text-2xl font-bold text-center">Perfil del Usuario</h2>
 
-    <p><strong>Nombre actual:</strong> {{ userName }}</p>
-    <p><strong>Correo actual:</strong> {{ user?.email }}</p>
+      <p><strong>Nombre actual:</strong> {{ userName }}</p>
+      <p><strong>Correo actual:</strong> {{ user?.email }}</p>
 
-    <!-- Cambiar nombre -->
-    <div>
-      <label class="block font-semibold mb-1">Nuevo nombre</label>
-      <UInput v-model="nuevoNombre" placeholder="Ingrese nuevo nombre" class="mb-2" />
-      <UButton @click="cambiarNombre" :loading="cargando" class="w-full">Cambiar nombre</UButton>
-    </div>
+      <!-- Cambiar nombre -->
+      <div>
+        <label class="block font-semibold mb-1">Nuevo nombre</label>
+        <UInput v-model="nuevoNombre" placeholder="Ingrese nuevo nombre" class="mb-2" />
+        <UButton @click="cambiarNombre" :loading="cargando" class="w-full">Cambiar nombre</UButton>
+      </div>
 
-    <!-- Cambiar correo -->
-    <div>
-      <label class="block font-semibold mb-1 mt-4">Nuevo correo</label>
-      <UInput v-model="nuevoCorreo" placeholder="Ingrese nuevo correo" class="mb-2" />
-      <UButton @click="cambiarCorreo" :loading="cargando" class="w-full">Cambiar correo</UButton>
-    </div>
+      <!-- Cambiar correo -->
+      <div>
+        <label class="block font-semibold mb-1 mt-4">Nuevo correo</label>
+        <UInput v-model="nuevoCorreo" placeholder="Ingrese nuevo correo" class="mb-2" />
+        <UButton @click="cambiarCorreo" :loading="cargando" class="w-full">Cambiar correo</UButton>
+      </div>
 
-    <!-- Cambiar contraseña -->
-    <div>
-      <UButton @click="solicitarCambioContrasena" :loading="cargando" class="w-full mt-4">
-        Cambiar contraseña por correo
-      </UButton>
-    </div>
+      <!-- Cambiar contraseña -->
+      <div>
+        <UButton @click="solicitarCambioContrasena" :loading="cargando" class="w-full mt-4">
+          Cambiar contraseña por correo
+        </UButton>
+      </div>
 
-    <p class="text-sm text-center text-gray-600 mt-4">{{ mensaje }}</p>
+      <p class="text-sm text-center text-gray-600 mt-4">{{ mensaje }}</p>
 
-    <div class="text-center mt-4">
-      <UButton @click="signOut" color="red" variant="solid">Cerrar sesión</UButton>
+      <div class="text-center mt-4">
+        <UButton @click="signOut" color="red" variant="solid">Cerrar sesión</UButton>
+      </div>
     </div>
   </div>
 </template>
