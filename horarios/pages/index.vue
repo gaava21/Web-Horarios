@@ -19,7 +19,6 @@ const state = reactive({
   password: ''
 })
 
-// Verificar si el componente se monta
 onMounted(() => {
   console.log('Componente index.vue montado')  // ✅
 })

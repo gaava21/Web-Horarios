@@ -24,11 +24,6 @@ const { userName, userRole, signOut } = useAuth()
           Horarios
         </UButton>
       </NuxtLink>
-      <UButton color="white" class="p-2 mr-2 mt-2 mb-2 text-black rounded-lg ml-right">
-        <img src="/images/home.png" 
-            alt="Botón" class="w-6 h-6 inline-block mr-2" />
-        Inicio
-      </UButton>
       <UPopover>
         <UButton color="white" class="p-2 mr-2 mt-2 mb-2 w-10 text-black text-center rounded-lg">
         ... 

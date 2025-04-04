@@ -1,13 +1,17 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from '#app'
 import supabase from '~/supabase'
+import { useAuth } from '~/composables/auth'
 
+const { userName, signOut } = useAuth() // Usar los valores del composable
+
+const router = useRouter()
 const horarios = ref([])
 const usuarioActual = ref(null)
 const reservasUsuario = ref([])
 const diaActual = new Date().toLocaleDateString('es-ES', { weekday: 'long' })
 const diaCapitalizado = diaActual.charAt(0).toUpperCase() + diaActual.slice(1)
-
 
 onMounted(async () => {
   const { data: { user } } = await supabase.auth.getUser()
@@ -26,14 +30,11 @@ const obtenerHorarios = async () => {
     console.error('Error al obtener horarios del día:', error)
     return
   }
-
   horarios.value = data
 }
 
-
 const obtenerReservasUsuario = async () => {
   const fechaHoy = new Date().toISOString().slice(0, 10)
-
   const { data, error } = await supabase
     .from('public_reservas')
     .select('horario_id')
@@ -44,16 +45,14 @@ const obtenerReservasUsuario = async () => {
     console.error('Error al obtener reservas del usuario:', error)
     return
   }
-
   reservasUsuario.value = data.map(r => r.horario_id)
 }
-
 
 const agendar = async (index) => {
   const horario = horarios.value[index]
   const fechaHoy = new Date().toISOString().slice(0, 10)
-
-  // 1. Verificar si ya existe una reserva para este usuario, horario y día
+  
+  // Verificar si ya existe una reserva para este usuario, horario y día
   const { data: reservasExistentes, error: errorCheck } = await supabase
     .from('public_reservas')
     .select('*')
@@ -71,7 +70,7 @@ const agendar = async (index) => {
     return
   }
 
-  // 2. Insertar si no hay reserva previa
+  // Insertar la reserva
   const { error } = await supabase.from('public_reservas').insert({
     usuario_id: usuarioActual.value.id,
     clase_id: horario.clase_id,
@@ -89,10 +88,8 @@ const agendar = async (index) => {
   }
 }
 
-
 const desagendar = async (index) => {
   const horario = horarios.value[index]
-
   const { error } = await supabase
     .from('public_reservas')
     .delete()
@@ -110,22 +107,22 @@ const desagendar = async (index) => {
 }
 </script>
 
+
 <template>
-  <div class="min-h-screen bg-cover bg-center" style="background-image: url('/images/portada.png')">
-    
-    <!-- Capa translúcida encima del fondo -->
+ <div class="min-h-screen bg-cover bg-center" style="background-image: url('/images/portada.png')">
     <div class="bg-white bg-opacity-20 min-h-screen">
       
-      <!-- Barra superior -->
-      <div class="flex items-center justify-end p-4 bg-gray-100 shadow-md mr-5">
-        <ULink to="lobby">
-          <UButton color="white" class="p-2 mr-2 mt-2 mb-2 text-black rounded-lg ml-right">
-            <img src="/images/home.png" alt="Botón" class="w-6 h-6 inline-block mr-2" />
+      <div class="flex items-center justify-end p-4 bg-gray-100 shadow-md ">
+        <NuxtLink to="/lobby">
+          <UButton color="white" class="p-2 mr-2 mt-2 mb-2 text-black rounded-lg ml-auto">
+            <img src="/images/home.png" class="w-6 h-6 inline-block mr-2" />
             Inicio
           </UButton>
-        </ULink>
+        </NuxtLink>
         <UPopover>
-          <UButton color="white" class="p-2 mr-2 mt-2 mb-2 w-10 text-black text-center rounded-lg">...</UButton>
+          <UButton color="white" class="p-2 mr-2 mt-2 mb-2 w-10 text-black text-center rounded-lg">
+            ... 
+          </UButton>
           <template #panel>
             <div class="bg-white shadow-lg rounded-lg p-2 w-48 text-center">
               <h1 class="text-xl font-semibold mb-4">Bienvenido {{ userName || 'Usuario' }}</h1>
@@ -150,7 +147,6 @@ const desagendar = async (index) => {
         >
           <p><strong>Día:</strong> {{ horario.dia }}</p>
           <p><strong>Hora:</strong> {{ horario.hora }}</p>
-          <p><strong>Entrenador:</strong> {{ horario.instructor }}</p>
           <p><strong>Clase:</strong> {{ horario.public_clases?.nombre }}</p>
 
           <UButton
@@ -172,4 +168,3 @@ const desagendar = async (index) => {
     </div>
   </div>
 </template>
-

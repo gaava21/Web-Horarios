@@ -8,13 +8,23 @@ const usuarios = ref([])
 const { userRole, roleLoaded, checkSession } = useAuth()
 const router = useRouter()
 
-// 🔄 Obtener usuarios directamente desde Supabase
+// Consulta que obtiene los usuarios junto con sus reservas y la hora asociada desde public_horarios
 const obtenerUsuarios = async () => {
   try {
     const { data, error } = await supabase
       .from('usuarios')
-      .select('id, nombre, correo')
-
+      .select(`
+         id,
+         nombre,
+         correo,
+         reservas: public_reservas (
+           id,
+           horario_id,
+           public_horarios (
+              hora
+           )
+         )
+      `)
     if (error) throw error
     usuarios.value = data || []
   } catch (error) {
@@ -41,23 +51,34 @@ onMounted(async () => {
   if (roleLoaded.value && userRole.value !== 'admin') {
     router.push('/lobby')
   } else {
-    await obtenerUsuarios() // 🔁 Solo si es admin
+    await obtenerUsuarios()
   }
 })
 
-const usuariosValidos = computed(() =>
-  usuarios.value.filter(usuario => usuario && usuario.id)
+// Propiedad computada que agrega un campo "agenda" a cada usuario
+const usuariosConAgenda = computed(() => 
+  usuarios.value.map(usuario => {
+    if (usuario.reservas && usuario.reservas.length > 0) {
+      // Se extraen las horas de cada reserva.
+      // Se asume que la relación "public_horarios" es un objeto (si es un array, se puede ajustar).
+      const horas = usuario.reservas.map(r => r.public_horarios ? r.public_horarios.hora : null)
+                                  .filter(Boolean)
+      const agendaText = horas.length > 0 ? horas.join(', ') : 'Agendado'
+      return { ...usuario, agenda: agendaText }
+    } else {
+      return { ...usuario, agenda: 'Sin agenda' }
+    }
+  })
 )
 </script>
-
 
 <template>
   <div v-if="userRole === 'admin' && roleLoaded" class="p-6">
     <NuxtLink to="lobby">
-        <UButton block class="w-full mt-2 mr-8 size-9" :ui="{ rounded: 'rounded-full' }">
-          Atrás
-        </UButton>
-      </NuxtLink>
+      <UButton block class="w-full mt-2 mr-8 size-9" :ui="{ rounded: 'rounded-full' }">
+        Atrás
+      </UButton>
+    </NuxtLink>
     <h1 class="text-2xl font-bold mb-4">Lista de Usuarios</h1>
 
     <div class="overflow-x-auto">
@@ -67,13 +88,14 @@ const usuariosValidos = computed(() =>
             <th class="border border-gray-300 px-4 py-2">ID</th>
             <th class="border border-gray-300 px-4 py-2">Nombre</th>
             <th class="border border-gray-300 px-4 py-2">Email</th>
+            <th class="border border-gray-300 px-4 py-2">Agenda</th>
             <th class="border border-gray-300 px-4 py-2">Acciones</th>
           </tr>
         </thead>
         <tbody>
-          <template v-if="usuariosValidos.length">
+          <template v-if="usuariosConAgenda.length">
             <tr
-              v-for="usuario in usuariosValidos"
+              v-for="usuario in usuariosConAgenda"
               :key="usuario.id"
               class="hover:bg-gray-100"
             >
@@ -82,6 +104,7 @@ const usuariosValidos = computed(() =>
                 {{ usuario.nombre || 'Sin nombre' }}
               </td>
               <td class="border border-gray-300 px-4 py-2">{{ usuario.correo }}</td>
+              <td class="border border-gray-300 px-4 py-2">{{ usuario.agenda }}</td>
               <td class="border border-gray-300 px-4 py-2 text-center">
                 <button
                   @click="eliminarUsuario(usuario.id)"
@@ -94,7 +117,7 @@ const usuariosValidos = computed(() =>
           </template>
           <template v-else>
             <tr>
-              <td class="border border-gray-300 px-4 py-2 text-center" colspan="4">
+              <td class="border border-gray-300 px-4 py-2 text-center" colspan="5">
                 No hay usuarios
               </td>
             </tr>

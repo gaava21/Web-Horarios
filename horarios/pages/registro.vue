@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from '#app'
+import { object, string } from 'yup'
 
 const router = useRouter()
 const nombre = ref('')
@@ -10,31 +11,61 @@ const telefono = ref('')
 const tipo_usuario = ref('')
 const mensaje = ref('')
 
+// Definir el esquema de validación con Yup
+const registroSchema = object({
+  nombre: string()
+    .min(2, 'El nombre debe tener al menos 2 caracteres')
+    .required('El nombre es obligatorio'),
+  correo: string()
+    .email('Correo inválido')
+    .required('El correo es obligatorio'),
+  contraseña: string()
+    .min(8, 'La contraseña debe tener al menos 8 caracteres')
+    .required('La contraseña es obligatoria'),
+  telefono: string()
+    .matches(/^[0-9]+$/, 'El teléfono debe contener solo números')
+    .min(8, 'El teléfono debe tener al menos 8 dígitos')
+    .required('El teléfono es obligatorio'),
+  tipo_usuario: string() // Opcional o con validación condicional según tu lógica
+})
+
 async function usuarios() {
   try {
-    const data = await $fetch('/api/auth/register', {
+    // Prepara los datos a validar
+    const formData = {
+      nombre: nombre.value,
+      correo: correo.value,
+      contraseña: contraseña.value,
+      telefono: telefono.value,
+      tipo_usuario: tipo_usuario.value
+    }
+    
+    // Valida el formulario (abortEarly: false para recoger todos los errores)
+    await registroSchema.validate(formData, { abortEarly: false })
+    
+    // Si pasa la validación, procede a registrar el usuario
+    await $fetch('/api/auth/register', {
       method: "POST",
       body: {
         nombre: nombre.value,
         password: contraseña.value,
         email: correo.value,
         telefono: telefono.value,
-        claveRol: tipo_usuario.value // ✅ Cambiado aquí
+        claveRol: tipo_usuario.value
       }
     })
 
     mensaje.value = "Registro exitoso. Revisa tu correo para confirmar tu cuenta."
-
     setTimeout(() => {
       router.push('/')
     }, 3000)
-
+    
   } catch (error) {
+    // Si el error es de validación de Yup, muestra los errores
     console.error('Error registrando usuario:', error)
-    mensaje.value = "Ocurrió un error durante el registro."
+    mensaje.value = error.errors ? error.errors.join(', ') : "Ocurrió un error durante el registro."
   }
 }
-
 </script>
 
 <template>
