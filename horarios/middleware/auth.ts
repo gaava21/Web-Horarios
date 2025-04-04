@@ -1,4 +1,3 @@
-// middleware/auth.ts
 import { useAuth } from '~/composables/auth'
 
 export default defineNuxtRouteMiddleware(async () => {

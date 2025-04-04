@@ -6,27 +6,30 @@ import supabase from '~/supabase'
 const { user, userName, signOut } = useAuth()
 
 const nuevoCorreo = ref('')
-const nuevoNombre = ref('') // <-- Nuevo nombre
+const nuevoNombre = ref('')
 const mensaje = ref('')
 const cargando = ref(false)
 
-// Cambiar correo
+/**
+ * Actualiza el correo electrónico del usuario
+ */
 const cambiarCorreo = async () => {
   if (!nuevoCorreo.value || !user.value?.id) return
 
   cargando.value = true
   const { error } = await supabase.auth.updateUser({ email: nuevoCorreo.value })
 
-  if (error) {
-    mensaje.value = `Error al cambiar el correo: ${error.message}`
-  } else {
-    mensaje.value = 'Correo actualizado correctamente. Revisa tu nuevo correo para confirmar.'
-    window.location.reload()
-  }
+  mensaje.value = error
+    ? `Error al cambiar el correo: ${error.message}`
+    : 'Correo actualizado correctamente. Revisa tu nuevo correo para confirmar.'
+
   cargando.value = false
+  if (!error) window.location.reload()
 }
 
-// Cambiar nombre
+/**
+ * Actualiza el nombre del usuario en la tabla personalizada
+ */
 const cambiarNombre = async () => {
   if (!nuevoNombre.value || !user.value?.id) return
 
@@ -36,17 +39,17 @@ const cambiarNombre = async () => {
     .update({ nombre: nuevoNombre.value })
     .eq('id', user.value.id)
 
-  if (error) {
-    mensaje.value = `Error al cambiar el nombre: ${error.message}`
-  } else {
-    mensaje.value = 'Nombre actualizado correctamente.'
-    window.location.reload()
-  }
+  mensaje.value = error
+    ? `Error al cambiar el nombre: ${error.message}`
+    : 'Nombre actualizado correctamente.'
 
   cargando.value = false
+  if (!error) window.location.reload()
 }
 
-// Enviar correo para cambiar contraseña
+/**
+ * Enviar correo de recuperación para cambiar contraseña
+ */
 const solicitarCambioContrasena = async () => {
   if (!user.value?.email) return
 
@@ -55,24 +58,27 @@ const solicitarCambioContrasena = async () => {
     redirectTo: 'http://localhost:3000/recuperar',
   })
 
-  if (error) {
-    mensaje.value = `Error al enviar enlace de cambio de contraseña: ${error.message}`
-  } else {
-    mensaje.value = 'Correo enviado para cambiar la contraseña.'
-  }
+  mensaje.value = error
+    ? `Error al enviar enlace de cambio de contraseña: ${error.message}`
+    : 'Correo enviado para cambiar la contraseña.'
+
   cargando.value = false
 }
 </script>
+
 <template>
   <div class="min-h-screen bg-gray-200 flex items-center justify-center">
     <div class="p-6 max-w-md mx-auto space-y-4 bg-white shadow-lg rounded-lg mt-8">
+      
+      <!-- Botón de regreso -->
       <NuxtLink to="lobby">
         <UButton block class="w-full mt-2 mr-8 size-9" :ui="{ rounded: 'rounded-full' }">
-          Atras
+          Atrás
         </UButton>
       </NuxtLink>
-      <h2 class="text-2xl font-bold text-center">Perfil del Usuario</h2>
 
+      <!-- Datos actuales -->
+      <h2 class="text-2xl font-bold text-center">Perfil del Usuario</h2>
       <p><strong>Nombre actual:</strong> {{ userName }}</p>
       <p><strong>Correo actual:</strong> {{ user?.email }}</p>
 
@@ -97,8 +103,10 @@ const solicitarCambioContrasena = async () => {
         </UButton>
       </div>
 
+      <!-- Mensaje -->
       <p class="text-sm text-center text-gray-600 mt-4">{{ mensaje }}</p>
 
+      <!-- Cerrar sesión -->
       <div class="text-center mt-4">
         <UButton @click="signOut" color="red" variant="solid">Cerrar sesión</UButton>
       </div>
