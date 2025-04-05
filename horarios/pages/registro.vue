@@ -88,13 +88,6 @@ const usuarios = async () => {
       <p class="text-sm text-center mt-4" :class="mensaje.includes('exitoso') ? 'text-green-600' : 'text-red-600'">
         {{ mensaje }}
       </p>
-
-      <!-- Link a recuperar contraseña -->
-      <NuxtLink to="/olvido">
-        <UButton block class="w-full mt-2" :ui="{ rounded: 'rounded-full' }">
-          Olvidé mi contraseña
-        </UButton>
-      </NuxtLink>
     </div>
   </div>
 </template>

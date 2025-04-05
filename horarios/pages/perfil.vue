@@ -6,30 +6,40 @@ import supabase from '~/supabase'
 const { user, userName, signOut } = useAuth()
 
 const nuevoCorreo = ref('')
-const nuevoNombre = ref('')
+const nuevoNombre = ref('') // <-- Nuevo nombre
 const mensaje = ref('')
 const cargando = ref(false)
 
-/**
- * Actualiza el correo electrónico del usuario
- */
+// Cambiar correo (actualizando tanto en auth como en la tabla "usuarios")
 const cambiarCorreo = async () => {
   if (!nuevoCorreo.value || !user.value?.id) return
 
   cargando.value = true
-  const { error } = await supabase.auth.updateUser({ email: nuevoCorreo.value })
 
-  mensaje.value = error
-    ? `Error al cambiar el correo: ${error.message}`
-    : 'Correo actualizado correctamente. Revisa tu nuevo correo para confirmar.'
+  // 1. Actualiza el correo en la parte de Auth de Supabase
+  const { error: authError } = await supabase.auth.updateUser({ email: nuevoCorreo.value })
+  if (authError) {
+    mensaje.value = `Error al cambiar el correo en auth: ${authError.message}`
+    cargando.value = false
+    return
+  }
 
+  // 2. Actualiza el correo en la tabla pública "usuarios"
+  const { error: dbError } = await supabase
+    .from('usuarios')
+    .update({ correo: nuevoCorreo.value })
+    .eq('id', user.value.id)
+
+  if (dbError) {
+    mensaje.value = `Error al actualizar el correo en la tabla: ${dbError.message}`
+  } else {
+    mensaje.value = 'Correo actualizado correctamente en auth y en la tabla. Revisa tu nuevo correo para confirmar.'
+    window.location.reload()
+  }
   cargando.value = false
-  if (!error) window.location.reload()
 }
 
-/**
- * Actualiza el nombre del usuario en la tabla personalizada
- */
+// Cambiar nombre
 const cambiarNombre = async () => {
   if (!nuevoNombre.value || !user.value?.id) return
 
@@ -39,17 +49,17 @@ const cambiarNombre = async () => {
     .update({ nombre: nuevoNombre.value })
     .eq('id', user.value.id)
 
-  mensaje.value = error
-    ? `Error al cambiar el nombre: ${error.message}`
-    : 'Nombre actualizado correctamente.'
+  if (error) {
+    mensaje.value = `Error al cambiar el nombre: ${error.message}`
+  } else {
+    mensaje.value = 'Nombre actualizado correctamente.'
+    window.location.reload()
+  }
 
   cargando.value = false
-  if (!error) window.location.reload()
 }
 
-/**
- * Enviar correo de recuperación para cambiar contraseña
- */
+// Enviar correo para cambiar contraseña
 const solicitarCambioContrasena = async () => {
   if (!user.value?.email) return
 
@@ -58,10 +68,11 @@ const solicitarCambioContrasena = async () => {
     redirectTo: 'http://localhost:3000/recuperar',
   })
 
-  mensaje.value = error
-    ? `Error al enviar enlace de cambio de contraseña: ${error.message}`
-    : 'Correo enviado para cambiar la contraseña.'
-
+  if (error) {
+    mensaje.value = `Error al enviar enlace de cambio de contraseña: ${error.message}`
+  } else {
+    mensaje.value = 'Correo enviado para cambiar la contraseña.'
+  }
   cargando.value = false
 }
 </script>
@@ -69,16 +80,13 @@ const solicitarCambioContrasena = async () => {
 <template>
   <div class="min-h-screen bg-gray-200 flex items-center justify-center">
     <div class="p-6 max-w-md mx-auto space-y-4 bg-white shadow-lg rounded-lg mt-8">
-      
-      <!-- Botón de regreso -->
       <NuxtLink to="lobby">
         <UButton block class="w-full mt-2 mr-8 size-9" :ui="{ rounded: 'rounded-full' }">
-          Atrás
+          Atras
         </UButton>
       </NuxtLink>
-
-      <!-- Datos actuales -->
       <h2 class="text-2xl font-bold text-center">Perfil del Usuario</h2>
+
       <p><strong>Nombre actual:</strong> {{ userName }}</p>
       <p><strong>Correo actual:</strong> {{ user?.email }}</p>
 
@@ -86,14 +94,18 @@ const solicitarCambioContrasena = async () => {
       <div>
         <label class="block font-semibold mb-1">Nuevo nombre</label>
         <UInput v-model="nuevoNombre" placeholder="Ingrese nuevo nombre" class="mb-2" />
-        <UButton @click="cambiarNombre" :loading="cargando" class="w-full">Cambiar nombre</UButton>
+        <UButton @click="cambiarNombre" :loading="cargando" class="w-full">
+          Cambiar nombre
+        </UButton>
       </div>
 
       <!-- Cambiar correo -->
       <div>
         <label class="block font-semibold mb-1 mt-4">Nuevo correo</label>
         <UInput v-model="nuevoCorreo" placeholder="Ingrese nuevo correo" class="mb-2" />
-        <UButton @click="cambiarCorreo" :loading="cargando" class="w-full">Cambiar correo</UButton>
+        <UButton @click="cambiarCorreo" :loading="cargando" class="w-full">
+          Cambiar correo
+        </UButton>
       </div>
 
       <!-- Cambiar contraseña -->
@@ -103,12 +115,12 @@ const solicitarCambioContrasena = async () => {
         </UButton>
       </div>
 
-      <!-- Mensaje -->
       <p class="text-sm text-center text-gray-600 mt-4">{{ mensaje }}</p>
 
-      <!-- Cerrar sesión -->
       <div class="text-center mt-4">
-        <UButton @click="signOut" color="red" variant="solid">Cerrar sesión</UButton>
+        <UButton @click="signOut" color="red" variant="solid">
+          Cerrar sesión
+        </UButton>
       </div>
     </div>
   </div>

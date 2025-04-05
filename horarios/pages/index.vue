@@ -66,6 +66,12 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
             Registro
           </UButton>
         </NuxtLink>
+        <!-- Link a recuperar contraseña -->
+        <NuxtLink to="/olvido">
+          <UButton block class="w-full mt-2" :ui="{ rounded: 'rounded-full' }">
+            Olvidé mi contraseña
+          </UButton>
+        </NuxtLink>
       </UForm>
     </div>
   </div>

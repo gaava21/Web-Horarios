@@ -1,33 +1,30 @@
-<script setup lang="ts">
+<script setup>
 import { useRouter } from '#app'
 import { ref, onMounted, computed } from 'vue'
 import { useAuth } from '~/composables/auth'
 import supabase from '~/supabase'
 
-const router = useRouter()
-const { userRole, roleLoaded, checkSession } = useAuth()
 const usuarios = ref([])
-const redirigiendo = ref(false)
-/**
- * Obtiene los usuarios con sus reservas y horarios asociados
- */
+const { userRole, roleLoaded, checkSession } = useAuth()
+const router = useRouter()
+
+// Consulta que obtiene los usuarios junto con sus reservas y la hora asociada desde public_horarios
 const obtenerUsuarios = async () => {
   try {
     const { data, error } = await supabase
       .from('usuarios')
       .select(`
-        id,
-        nombre,
-        correo,
-        reservas: public_reservas (
-          id,
-          horario_id,
-          public_horarios (
-            hora
-          )
-        )
+         id,
+         nombre,
+         correo,
+         reservas: public_reservas (
+           id,
+           horario_id,
+           public_horarios (
+              hora
+           )
+         )
       `)
-
     if (error) throw error
     usuarios.value = data || []
   } catch (error) {
@@ -35,10 +32,7 @@ const obtenerUsuarios = async () => {
   }
 }
 
-/**
- * Elimina un usuario de la tabla `usuarios`
- */
-const eliminarUsuario = async (id: string) => {
+const eliminarUsuario = async (id) => {
   const confirmacion = confirm('¿Estás seguro de que deseas eliminar este usuario?')
   if (!confirmacion) return
 
@@ -51,33 +45,28 @@ const eliminarUsuario = async (id: string) => {
     alert('Hubo un error al eliminar el usuario.')
   }
 }
-/**
- * Verifica si el usuario tiene permiso y obtiene datos
- */
- onMounted(async () => {
-  await checkSession()
-})
 
-// Esperar a que roleLoaded esté listo, y luego verificar si no es admin
-watch(roleLoaded, async (loaded) => {
-  if (loaded && userRole.value !== 'admin') {
-  redirigiendo.value = true
-  await new Promise(resolve => setTimeout(resolve, 3000))
-  router.push('/lobby')
-  } else if (loaded && userRole.value === 'admin') {
+onMounted(async () => {
+  await checkSession()
+  if (roleLoaded.value && userRole.value !== 'admin') {
+    router.push('/lobby')
+  } else {
     await obtenerUsuarios()
   }
 })
 
-/**
- * Agrega texto de agenda legible por cada usuario
- */
-const usuariosConAgenda = computed(() =>
+// Propiedad computada que agrega un campo "agenda" a cada usuario
+const usuariosConAgenda = computed(() => 
   usuarios.value.map(usuario => {
-    const horas = usuario.reservas?.map(r => r.public_horarios?.hora).filter(Boolean) || []
-    return {
-      ...usuario,
-      agenda: horas.length ? horas.join(', ') : 'Sin agenda'
+    if (usuario.reservas && usuario.reservas.length > 0) {
+      // Se extraen las horas de cada reserva.
+      // Se asume que la relación "public_horarios" es un objeto (si es un array, se puede ajustar).
+      const horas = usuario.reservas.map(r => r.public_horarios ? r.public_horarios.hora : null)
+                                  .filter(Boolean)
+      const agendaText = horas.length > 0 ? horas.join(', ') : 'Agendado'
+      return { ...usuario, agenda: agendaText }
+    } else {
+      return { ...usuario, agenda: 'Sin agenda' }
     }
   })
 )
@@ -86,11 +75,10 @@ const usuariosConAgenda = computed(() =>
 <template>
   <div v-if="userRole === 'admin' && roleLoaded" class="p-6">
     <NuxtLink to="lobby">
-      <UButton block class="w-full mt-2 mb-4" :ui="{ rounded: 'rounded-full' }">
+      <UButton block class="w-full mt-2 mr-8 size-9" :ui="{ rounded: 'rounded-full' }">
         Atrás
       </UButton>
     </NuxtLink>
-
     <h1 class="text-2xl font-bold mb-4">Lista de Usuarios</h1>
 
     <div class="overflow-x-auto">
@@ -112,7 +100,9 @@ const usuariosConAgenda = computed(() =>
               class="hover:bg-gray-100"
             >
               <td class="border border-gray-300 px-4 py-2">{{ usuario.id }}</td>
-              <td class="border border-gray-300 px-4 py-2">{{ usuario.nombre || 'Sin nombre' }}</td>
+              <td class="border border-gray-300 px-4 py-2">
+                {{ usuario.nombre || 'Sin nombre' }}
+              </td>
               <td class="border border-gray-300 px-4 py-2">{{ usuario.correo }}</td>
               <td class="border border-gray-300 px-4 py-2">{{ usuario.agenda }}</td>
               <td class="border border-gray-300 px-4 py-2 text-center">
@@ -125,18 +115,16 @@ const usuariosConAgenda = computed(() =>
               </td>
             </tr>
           </template>
-          <tr v-else>
-            <td colspan="5" class="text-center py-4 text-gray-500">
-              No hay usuarios registrados.
-            </td>
-          </tr>
+          <template v-else>
+            <tr>
+              <td class="border border-gray-300 px-4 py-2 text-center" colspan="5">
+                No hay usuarios
+              </td>
+            </tr>
+          </template>
         </tbody>
       </table>
     </div>
-  </div>
-
-  <div v-else-if="redirigiendo" class="text-center py-8 text-gray-600">
-    No tienes acceso. Redirigiendo al lobby...
   </div>
   <div v-else class="text-center py-8 text-gray-600">
     Cargando o sin acceso...

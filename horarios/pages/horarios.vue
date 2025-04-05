@@ -1,72 +1,76 @@
-<script setup lang="ts">
+<script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from '#app'
 import supabase from '~/supabase'
 import { useAuth } from '~/composables/auth'
 
-const { userName, signOut } = useAuth()
-const router = useRouter()
+const { userName, signOut } = useAuth() // Usar los valores del composable
 
+const router = useRouter()
 const horarios = ref([])
 const usuarioActual = ref(null)
 const reservasUsuario = ref([])
-
-// Obtiene el día actual en español con la primera letra en mayúscula
 const diaActual = new Date().toLocaleDateString('es-ES', { weekday: 'long' })
 const diaCapitalizado = diaActual.charAt(0).toUpperCase() + diaActual.slice(1)
 
 onMounted(async () => {
   const { data: { user } } = await supabase.auth.getUser()
   usuarioActual.value = user
-
   await obtenerHorarios()
   await obtenerReservasUsuario()
 })
 
-// Obtiene los horarios del día actual
 const obtenerHorarios = async () => {
   const { data, error } = await supabase
     .from('public_horarios')
     .select('*, public_clases(nombre)')
     .eq('dia', diaCapitalizado)
 
-  if (error) return console.error('Error al obtener horarios:', error)
+  if (error) {
+    console.error('Error al obtener horarios del día:', error)
+    return
+  }
   horarios.value = data
 }
 
-// Obtiene las reservas hechas por el usuario para el día actual
 const obtenerReservasUsuario = async () => {
   const fechaHoy = new Date().toISOString().slice(0, 10)
-
   const { data, error } = await supabase
     .from('public_reservas')
     .select('horario_id')
     .eq('usuario_id', usuarioActual.value.id)
     .eq('dia', fechaHoy)
 
-  if (error) return console.error('Error al obtener reservas del usuario:', error)
+  if (error) {
+    console.error('Error al obtener reservas del usuario:', error)
+    return
+  }
+  // Solo nos interesa saber si ya tiene alguna reserva para hoy
   reservasUsuario.value = data.map(r => r.horario_id)
 }
 
-// Realiza una reserva si no existe una igual
 const agendar = async (index) => {
   const horario = horarios.value[index]
   const fechaHoy = new Date().toISOString().slice(0, 10)
-
-  const { data: existentes, error: errorCheck } = await supabase
+  
+  // Verificar si ya existe una reserva para este usuario en el día de hoy (sin importar el horario)
+  const { data: reservasExistentes, error: errorCheck } = await supabase
     .from('public_reservas')
     .select('*')
     .eq('usuario_id', usuarioActual.value.id)
-    .eq('horario_id', horario.id)
     .eq('dia', fechaHoy)
 
-  if (errorCheck) return console.error('Error al verificar reservas existentes:', errorCheck)
-
-  if (existentes.length > 0) {
-    alert('Ya tienes una reserva para este horario.')
+  if (errorCheck) {
+    console.error('Error al verificar reservas existentes:', errorCheck)
     return
   }
 
+  if (reservasExistentes.length > 0) {
+    alert('Ya tienes una reserva para el día de hoy.')
+    return
+  }
+
+  // Insertar la reserva
   const { error } = await supabase.from('public_reservas').insert({
     usuario_id: usuarioActual.value.id,
     clase_id: horario.clase_id,
@@ -84,11 +88,9 @@ const agendar = async (index) => {
   }
 }
 
-// Cancela una reserva del usuario
 const desagendar = async (index) => {
   const horario = horarios.value[index]
   const fechaHoy = new Date().toISOString().slice(0, 10)
-
   const { error } = await supabase
     .from('public_reservas')
     .delete()
@@ -107,37 +109,36 @@ const desagendar = async (index) => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-cover bg-center" style="background-image: url('/images/portada.png')">
+ <div class="min-h-screen bg-cover bg-center" style="background-image: url('/images/portada.png')">
     <div class="bg-white bg-opacity-20 min-h-screen">
-      <!-- Barra superior -->
-      <div class="flex items-center justify-end p-4 bg-gray-100 shadow-md">
+      
+      <div class="flex items-center justify-end p-4 bg-gray-100 shadow-md ">
         <NuxtLink to="/lobby">
-          <UButton color="white" class="p-2 mr-2 text-black rounded-lg">
+          <UButton color="white" class="p-2 mr-2 mt-2 mb-2 text-black rounded-lg ml-auto">
             <img src="/images/home.png" class="w-6 h-6 inline-block mr-2" />
             Inicio
           </UButton>
         </NuxtLink>
-
         <UPopover>
-          <UButton color="white" class="p-2 w-10 text-black text-center rounded-lg">...</UButton>
+          <UButton color="white" class="p-2 mr-2 mt-2 mb-2 w-10 text-black text-center rounded-lg">
+            ... 
+          </UButton>
           <template #panel>
             <div class="bg-white shadow-lg rounded-lg p-2 w-48 text-center">
               <h1 class="text-xl font-semibold mb-4">Bienvenido {{ userName || 'Usuario' }}</h1>
-
               <NuxtLink to="perfil">
                 <UButton color="white" class="text-black">
                   <img src="/images/perfil.png" alt="Botón" class="w-6 h-6 inline-block mr-2" />
                   Perfil Configuración
                 </UButton>
               </NuxtLink>
-
               <UButton @click="signOut" class="mt-4">Cerrar sesión</UButton>
             </div>
           </template>
         </UPopover>
       </div>
 
-      <!-- Lista de horarios -->
+      <!-- Contenido con agenda -->
       <div class="p-6 space-y-4">
         <div
           v-for="(horario, index) in horarios"
@@ -163,6 +164,7 @@ const desagendar = async (index) => {
           </UButton>
         </div>
       </div>
+
     </div>
   </div>
 </template>
