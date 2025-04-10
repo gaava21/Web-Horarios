@@ -33,7 +33,7 @@ const enviarEnlaceRecuperacion = async () => {
   <div class="max-w-md mx-auto mt-12 p-6 bg-white rounded-lg shadow">
     
     <!-- Botón para volver al registro -->
-      <NuxtLink to="registro">
+      <NuxtLink to="/">
         <UButton block class="w-full mt-2 mb-2 size-9" :ui="{ rounded: 'rounded-full' }">
           Atrás
         </UButton>

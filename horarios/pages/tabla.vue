@@ -37,7 +37,10 @@ const eliminarUsuario = async (id) => {
   if (!confirmacion) return
 
   try {
-    await supabase.from('usuarios').delete().eq('id', id)
+    await $fetch('/api/auth/eliminar_usuarios', {
+      method: 'POST',
+      body: { id }
+    })
     alert('Usuario eliminado exitosamente')
     await obtenerUsuarios()
   } catch (error) {
@@ -45,6 +48,7 @@ const eliminarUsuario = async (id) => {
     alert('Hubo un error al eliminar el usuario.')
   }
 }
+
 
 onMounted(async () => {
   await checkSession()

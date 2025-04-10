@@ -1,3 +1,4 @@
+// server/api/auth/eliminar_usuarios.ts
 import { H3Event } from 'h3'
 import supabaseAdmin from '~/server/supabaseAdmin'
 

@@ -10,10 +10,10 @@ interface AuthParams {
 }
 
 export default defineEventHandler(async (event) => {
-  const config = useRuntimeConfig(); // ✅ Obtener variables del runtime
+  const config = useRuntimeConfig(); //  Obtener variables del runtime
   const CLAVE_SECRETA_ADMIN = config.CLAVE_SECRETA_ADMIN;
 
-  const body = await readBody<AuthParams>(event); // ✅ Solo una vez
+  const body = await readBody<AuthParams>(event);
   console.log("CLAVE INGRESADA:", body.claveRol);
   console.log("CLAVE CORRECTA desde runtimeConfig:", CLAVE_SECRETA_ADMIN);
 
